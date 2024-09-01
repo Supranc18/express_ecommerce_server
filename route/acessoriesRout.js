@@ -1,5 +1,5 @@
 const express = require('express')
-const {add, edit, remove, product, product_id } = require('../controller/product')
+const {add, edit, remove, product, product_id } = require('../controller/acessories')
 const {checkAuthentication,forSeller} = require('../middleware/tokenMiddleware')
 
 

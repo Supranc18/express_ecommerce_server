@@ -71,6 +71,32 @@ async function signup(req, res) {
   }
   async function login(req, res) {
     try {
+            // ***error validation using joi**
+            const loginValidationSchema = Joi.object({
+               
+                password: Joi.string().required(),
+                email: Joi.string().required().email(),
+               
+            })
+    
+            let validationStatus = loginValidationSchema.validate(req.body, {
+                allowUnknown: true,
+                abortEarly: false,
+            })
+    
+            if (validationStatus.error) {
+                let errors = validationStatus.error.details.map((el) => {
+                    return {
+                        message: el.message,
+                        field: el.context.key,
+                    }
+                })
+                return res.status(400).send({
+                    msg: "Login Failed",
+                    errors,
+                })
+            }
+    
 
        let user = await User.findOne({email:req.body.email}) 
        if (user) {
@@ -135,9 +161,45 @@ async function signup(req, res) {
     });
 }
   }
+
+
+
+  async function user(req, res) {
+    try {
+        // Since the token is already verified, use the decoded user from req.user
+        let user = await User.findOne({ email: req.user.email });
+
+        if (user) {
+            // Remove the password before sending the user object
+            user = user.toObject();
+            delete user.password;
+
+            // Send the user data along with the existing token
+            res.send({
+                ...user,
+                token: req.headers.authorization.replace("Bearer ", "") // Send back the same token
+            });
+            return;
+        }
+
+        // If no user found, send a 401 status with an error message
+        res.status(401).send({
+            msg: "Invalid credentials"
+        });
+    } catch (error) {
+        // Handle any errors that occur during token verification or user lookup
+        res.status(500).send({
+            msg: "An error occurred",
+            error: error.message
+        });
+    }
+}
+
+    
   
  module.exports={
     signup:signup,
     login:login,
     forgetPassword,
+    user
 }

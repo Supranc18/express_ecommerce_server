@@ -1,5 +1,5 @@
 const Joi = require("joi")
-const Product = require("../dbModule/dbProduct")
+const Blog = require("../dbModule/dbBlog")
 const path = require("path")
 const { isValidObjectId } = require('mongoose');
 
@@ -9,11 +9,8 @@ const { isValidObjectId } = require('mongoose');
 async function add(req, res) {
     try {
       const productValidationSchema = Joi.object({
-        name: Joi.string().required(),
-        price: Joi.number().required(),
-        in_stock: Joi.number().required(),
-        description:Joi.string().required(),
-        gender: Joi.string().required().valid("male","female"),
+        explain: Joi.string().required(),
+        topic: Joi.string().required(),
       })
       let validationStatus = productValidationSchema.validate(req.body, {
         allowUnknown: true,
@@ -48,23 +45,22 @@ req.files.image.mv(imageStorePath),(err)=>{
 }
     }
  
-      let product =await Product.create({
+      let blog =await Blog.create({
         ...req.body,
         user:req.user._id,
         image:image,
       })
-        res.send(product)
+        res.send(blog)
     } catch (error) {
-        
+        res.status(500).send("server error");  
     }
     
   }
 
-  async function product(req, res) {
+  async function blog(req, res) {
     try {
       let search = req.query.search || "";
       let sort;
-      let price;
   
       if (req.query.sort) {
         if (req.query.sort === "dateDec") {
@@ -77,14 +73,14 @@ req.files.image.mv(imageStorePath),(err)=>{
       const limit = 6; // Number of products per page
       const skip = (page - 1) * limit; // Number of products to skip
   
-      let product = await Product.find({
-        name: new RegExp(search, "i")
+      let blog = await Blog.find({
+        topic: new RegExp(search, "i")
       })
         .sort(sort)
         .skip(skip) // Skip the previous pages of products
         .limit(limit); // Limit to 8 products
   
-      res.send(product);
+      res.send(blog);
     } catch (error) {
       res.status(500).send("server error");
     }
@@ -93,20 +89,19 @@ req.files.image.mv(imageStorePath),(err)=>{
 
   async function edit(req, res) {
     try {
-      let productId = req.params.id.trim();
+      let blogId = req.params.id.trim();
     
       
       if(req.user._id){
-        if (!isValidObjectId(productId)) {
+        if (!isValidObjectId(blogId)) {
           return res.status(400).send({ msg: "Invalid product ID format" });
         }
-      const product = await Product.findByIdAndUpdate(productId,{
-        name:req.body.name,
-        price:req.body.price,
-        in_stock:req.body.in_stock,
-        description:req.body.description,
+      const blog = await Blog.findByIdAndUpdate(blogId,{
+        topic:req.body.topic,
+        explain:req.body.explain,
+        
       })
-      res.send(product)
+      res.send(blog)
     }
     else{
       res.status(403).send({
@@ -123,20 +118,20 @@ req.files.image.mv(imageStorePath),(err)=>{
 
   async function remove(req, res) {
     try {
-      let productId = req.params.id.trim(); // Trim whitespace and newlines
+      let blogId = req.params.id.trim(); // Trim whitespace and newlines
       
   
       if (req.user._id) {
         // Validate the product ID format
-        if (!isValidObjectId(productId)) {
+        if (!isValidObjectId(blogId)) {
           return res.status(400).send({ msg: "Invalid product ID format" });
         }
   
-        const product = await Product.findByIdAndDelete(productId);
-        if (!product) {
-          return res.status(404).send({ msg: "Product not found" });
+        const blog = await Blog.findByIdAndDelete(blogId);
+        if (!blog) {
+          return res.status(404).send({ msg: "Blog not found" });
         }
-        res.send("Product deleted");
+        res.send("Blog deleted");
       } else {
         res.status(403).send({ msg: "Invalid user",
           err2:req.user._id
@@ -148,13 +143,13 @@ req.files.image.mv(imageStorePath),(err)=>{
     }
   }
 
-  async function product_id(req, res) {
+  async function blog_id(req, res) {
     try {
-      let productId = req.params.id.trim();
+      let blogId = req.params.id.trim();
     
-      let product = await Product.findById(productId,{
+      let blog = await Blog.findById(blogId,{
       })
-      res.send(product) 
+      res.send(blog) 
     } catch (error) {
       res.status(500).send("server error")     
     }
@@ -164,8 +159,8 @@ req.files.image.mv(imageStorePath),(err)=>{
   
  module.exports={
     add,
-    product,
+    blog,
     edit,
     remove,
-    product_id
+    blog_id
 }

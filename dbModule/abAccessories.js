@@ -6,11 +6,9 @@ const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 const ObjectId = Schema.ObjectId;
 
-const productschema = new Schema({
+const accesssorieschema = new Schema({
   name: String,
-  bread:String,
   price: Number,
-  gender:String,
   in_stock: Number,
   description:String,
   user:{
@@ -24,6 +22,6 @@ const productschema = new Schema({
   timestamps:true,
 });
 
-const Product = mongoose.model('product', productschema);
+const Accessories = mongoose.model('accessories', accesssorieschema);
 
-module.exports=Product
+module.exports=Accessories

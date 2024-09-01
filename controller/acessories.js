@@ -1,5 +1,5 @@
 const Joi = require("joi")
-const Product = require("../dbModule/dbProduct")
+const Accessories = require("../dbModule/abAccessories")
 const path = require("path")
 const { isValidObjectId } = require('mongoose');
 
@@ -13,7 +13,6 @@ async function add(req, res) {
         price: Joi.number().required(),
         in_stock: Joi.number().required(),
         description:Joi.string().required(),
-        gender: Joi.string().required().valid("male","female"),
       })
       let validationStatus = productValidationSchema.validate(req.body, {
         allowUnknown: true,
@@ -48,12 +47,12 @@ req.files.image.mv(imageStorePath),(err)=>{
 }
     }
  
-      let product =await Product.create({
+      let accessories =await Accessories.create({
         ...req.body,
         user:req.user._id,
         image:image,
       })
-        res.send(product)
+        res.send(accessories)
     } catch (error) {
         
     }
@@ -62,34 +61,28 @@ req.files.image.mv(imageStorePath),(err)=>{
 
   async function product(req, res) {
     try {
-      let search = req.query.search || "";
-      let sort;
-      let price;
-  
-      if (req.query.sort) {
-        if (req.query.sort === "dateDec") {
-          sort = { createdAt: -1 };
+      let search= req.query.search ||""
+      let sort
+      let price
+    
+      if(req.query.sort){
+        if(req.query.sort ==="dateDec"){
+          sort={createdAt:-1}
         }
+      
       }
-  
-      // Pagination variables
-      const page = parseInt(req.query.page) || 1; // Current page number
-      const limit = 6; // Number of products per page
-      const skip = (page - 1) * limit; // Number of products to skip
-  
-      let product = await Product.find({
-        name: new RegExp(search, "i")
+      let acessories = await Accessories.find({name:RegExp(search,"i")
       })
-        .sort(sort)
-        .skip(skip) // Skip the previous pages of products
-        .limit(limit); // Limit to 8 products
-  
-      res.send(product);
+      .sort(sort)
+      
+      res.send(acessories)
+      
+        
     } catch (error) {
-      res.status(500).send("server error");
+      res.status(500).send("server error")     
     }
+    
   }
-  
 
   async function edit(req, res) {
     try {
@@ -100,7 +93,7 @@ req.files.image.mv(imageStorePath),(err)=>{
         if (!isValidObjectId(productId)) {
           return res.status(400).send({ msg: "Invalid product ID format" });
         }
-      const product = await Product.findByIdAndUpdate(productId,{
+      const product = await Accessories.findByIdAndUpdate(productId,{
         name:req.body.name,
         price:req.body.price,
         in_stock:req.body.in_stock,
@@ -132,7 +125,7 @@ req.files.image.mv(imageStorePath),(err)=>{
           return res.status(400).send({ msg: "Invalid product ID format" });
         }
   
-        const product = await Product.findByIdAndDelete(productId);
+        const product = await Accessories.findByIdAndDelete(productId);
         if (!product) {
           return res.status(404).send({ msg: "Product not found" });
         }
@@ -152,7 +145,7 @@ req.files.image.mv(imageStorePath),(err)=>{
     try {
       let productId = req.params.id.trim();
     
-      let product = await Product.findById(productId,{
+      let product = await Accessories.findById(productId,{
       })
       res.send(product) 
     } catch (error) {
